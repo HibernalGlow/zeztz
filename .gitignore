@@ -44,3 +44,4 @@ Desktop.ini
 *.tmp
 *.temp
 .cache/
+doc/zero-native
