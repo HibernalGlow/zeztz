@@ -1,0 +1,31 @@
+.{
+    .id = "com.hibernalglow.zeztz",
+    .name = "zeztz",
+    .display_name = "zeztz - 系统定时器",
+    .version = "0.1.0",
+    .icons = .{ "assets/icon.icns" },
+    .platforms = .{ "windows", "macos", "linux" },
+    .permissions = .{},
+    .capabilities = .{ "webview" },
+    .frontend = .{
+        .dist = "frontend/dist",
+        .entry = "index.html",
+        .spa_fallback = true,
+        .dev = .{
+            .url = "http://127.0.0.1:5173/",
+            .command = .{ "npm", "--prefix", "frontend", "run", "dev", "--", "--host", "127.0.0.1" },
+            .ready_path = "/",
+            .timeout_ms = 30000,
+        },
+    },
+    .security = .{
+        .navigation = .{
+            .allowed_origins = .{ "zero://app", "zero://inline", "http://127.0.0.1:5173" },
+            .external_links = .{ .action = "deny" },
+        },
+    },
+    .web_engine = "system",
+    .windows = .{
+        .{ .label = "main", .title = "zeztz - 系统定时器", .width = 540, .height = 680, .restore_state = true },
+    },
+}

@@ -1,0 +1,30 @@
+{
+  "name": "zeztz",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@lucide/svelte": "^0.561.0",
+    "bits-ui": "^1.3.3",
+    "clsx": "^2.1.1",
+    "svelte": "^5.25.0",
+    "tailwind-merge": "^3.2.0",
+    "tailwind-variants": "^1.0.0"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^5.0.3",
+    "@tailwindcss/vite": "^4.1.4",
+    "tailwindcss": "^4.1.4",
+    "tw-animate-css": "^1.2.5",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.2"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild"]
+  }
+}

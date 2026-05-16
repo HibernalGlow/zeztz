@@ -1,0 +1,46 @@
+# Zig
+.zig-cache/
+zig-out/
+*.pdb
+*.exe
+
+# Node.js / Frontend
+node_modules/
+.pnpm-store/
+dist/
+.env
+.env.*
+!.env.example
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build outputs
+*.o
+*.obj
+*.lib
+*.dll
+*.so
+*.dylib
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
