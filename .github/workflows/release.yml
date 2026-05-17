@@ -40,8 +40,14 @@ jobs:
 
       - name: Install NSIS
         run: |
-          choco install nsis -y
-          echo "C:\Program Files\NSIS" >> $env:GITHUB_PATH
+          iwr -useb get.scoop.sh | iex
+          scoop install nsis
+          echo "$env:USERPROFILE\scoop\shims" >> $env:GITHUB_PATH
+
+      - name: Verify NSIS installation
+        run: |
+          makensis --version
+          where.exe makensis
 
       - name: Build application
         run: wails3 build
