@@ -8,7 +8,7 @@
   import {
     Play, Square, RotateCcw, Clock, Moon, Power, RotateCcw as RestartIcon,
     CircleCheck, CircleX, Copy, Check, Activity, Wifi, Cpu,
-    Calendar, Timer, Gauge, Terminal, Zap
+    Calendar, Timer, Gauge, Terminal, Zap, Sun
   } from "@lucide/svelte";
 
   type TimerMode = 'countdown' | 'specific_time' | 'netspeed' | 'cpu';
@@ -31,6 +31,7 @@
   let cpuThreshold = $state(10);
   let cpuDuration = $state(2);
   let dryrun = $state(true);
+  let theme: 'light' | 'dark' = $state(document.documentElement.classList.contains('dark') ? 'dark' : 'light');
 
   let phase: Phase = $state('idle');
   let progress = $state(0);
@@ -364,10 +365,12 @@
   }
 
   function cycleTheme() {
-    if (document.documentElement.classList.contains('dark')) {
+    if (theme === 'dark') {
       document.documentElement.classList.remove('dark');
+      theme = 'light';
     } else {
       document.documentElement.classList.add('dark');
+      theme = 'dark';
     }
   }
 </script>
@@ -379,12 +382,26 @@
       <Clock class="size-5" />
       <h1 class="text-sm font-semibold tracking-tight">zeztz</h1>
     </div>
-    <div class="flex items-center gap-2">
-      <span class="text-xs text-muted-foreground" class:opacity-50={!isRunning}>
-        {phase === 'running' ? '运行中' : phase === 'completed' ? '完成' : phase === 'cancelled' ? '已取消' : phase === 'error' ? '错误' : '就绪'}
-      </span>
-      <button onclick={cycleTheme} class="text-muted-foreground hover:text-foreground transition-colors text-xs px-2 py-1 rounded-md hover:bg-accent">
-        主题
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-1.5">
+        <div
+          class="size-2 rounded-full transition-colors duration-300"
+          class:animate-pulse={phase === 'running'}
+          class:bg-green-500={phase === 'running'}
+          class:bg-yellow-500={phase === 'completed'}
+          class:bg-red-500={phase === 'error'}
+          class:bg-muted={phase === 'idle' || phase === 'cancelled'}
+        ></div>
+        <span class="text-xs text-muted-foreground">
+          {phase === 'running' ? '运行' : phase === 'completed' ? '完成' : phase === 'cancelled' ? '取消' : phase === 'error' ? '错误' : '就绪'}
+        </span>
+      </div>
+      <button onclick={cycleTheme} class="text-muted-foreground hover:text-foreground transition-colors p-1 rounded-md hover:bg-accent">
+        {#if theme === 'dark'}
+          <Moon class="size-4" />
+        {:else}
+          <Sun class="size-4" />
+        {/if}
       </button>
     </div>
   </header>
