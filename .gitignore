@@ -45,3 +45,5 @@ Desktop.ini
 *.temp
 .cache/
 doc/zero-native
+/build/*
+/.task/*
