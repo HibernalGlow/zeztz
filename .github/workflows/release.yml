@@ -30,6 +30,11 @@ jobs:
         with:
           version: 11
 
+      - name: Verify pnpm installation
+        run: |
+          pnpm --version
+          echo "PATH: $env:PATH"
+
       - name: Install Wails3
         run: go install github.com/wailsapp/wails/v3/cmd/wails3@latest
 
@@ -40,9 +45,13 @@ jobs:
 
       - name: Build application
         run: wails3 build
+        env:
+          PACKAGE_MANAGER: pnpm
 
       - name: Package application
         run: wails3 package
+        env:
+          PACKAGE_MANAGER: pnpm
 
       - name: Get version from tag
         id: get_version
