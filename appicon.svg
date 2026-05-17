@@ -1,67 +1,62 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="100%" height="100%">
-  <rect width="1000" height="1000" fill="#0a0a0a" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="500" height="500">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    
+    <linearGradient id="pinkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f472b6" />
+      <stop offset="100%" stop-color="#be185d" />
+    </linearGradient>
 
-  <!-- Cyan/Teal Shape (Left Leaf) -->
-  <path d="M 519.5 105
-           C 490 200, 430 280, 405 320
-           C 380 360, 310 470, 290 540
-           C 300 545, 312 540, 320 530
-           C 340 490, 370 430, 390 390
-           C 400 370, 410 350, 420 330
-           C 435 310, 450 290, 460 270
-           C 480 230, 500 180, 519.5 105 Z"
-        fill="#09bfb5" />
+    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#60a5fa" />
+      <stop offset="100%" stop-color="#2563eb" />
+    </linearGradient>
 
-  <!-- Main Red Body (Center-Left) -->
-  <path d="M 730 240
-           C 690 260, 630 300, 580 330
-           C 530 360, 470 400, 435 430
-           C 400 460, 370 500, 355 540
-           C 340 580, 320 620, 315 640
-           C 310 655, 305 660, 305 660
-           C 308 660, 315 655, 320 650
-           C 330 640, 340 630, 350 620
-           C 370 640, 400 660, 430 660
-           C 460 660, 485 640, 500 610
-           C 515 580, 525 540, 530 500
-           C 535 460, 530 410, 528 380
-           C 550 370, 580 340, 600 310
-           C 610 330, 615 360, 615 390
-           C 615 440, 610 500, 595 560
-           C 590 580, 585 600, 580 610
-           C 590 620, 600 625, 605 630
-           C 610 600, 620 550, 625 500
-           C 630 440, 630 380, 625 330
-           C 660 300, 690 275, 730 240 Z"
-        fill="#bd0a2c" />
+    <linearGradient id="silverGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#94a3b8" />
+    </linearGradient>
 
-  <!-- Top-Right Red Hook -->
-  <path d="M 735 235
-           C 700 270, 660 310, 630 350
-           C 600 390, 580 440, 565 490
-           C 550 540, 555 580, 565 610
-           C 570 625, 580 635, 585 640
-           C 590 620, 600 580, 605 550
-           C 615 500, 620 450, 635 400
-           C 650 350, 680 300, 735 235 Z"
-        fill="#bd0a2c" />
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
 
-  <!-- Bottom-Right Red Shape -->
-  <path d="M 735 560
-           C 700 600, 680 640, 640 670
-           C 600 700, 540 720, 490 740
-           C 450 755, 410 770, 385 795
-           C 375 810, 365 840, 360 890
-           C 370 870, 390 840, 410 820
-           C 440 795, 480 780, 520 770
-           C 560 760, 580 755, 595 750
-           C 610 730, 630 695, 655 660
-           C 680 625, 705 590, 735 560 Z"
-        fill="#bd0a2c" />
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="6" flood-opacity="0.35" flood-color="#000" />
+    </filter>
+    
+    <filter id="text-shadow">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-opacity="0.5" flood-color="#000" />
+    </filter>
+  </defs>
 
-  <!-- Tiny Lower-Left Red Tip -->
-  <path d="M 318 640
-           C 315 645, 312 655, 310 665
-           C 312 660, 315 650, 318 640 Z"
-        fill="#bd0a2c" />
+  <rect x="0" y="0" width="500" height="500" rx="100" fill="url(#bgGrad)" />
+
+  <circle cx="250" cy="200" r="130" fill="#182235" stroke="#334155" stroke-width="20" filter="url(#shadow)" />
+
+  <circle cx="250" cy="200" r="130" fill="none" stroke="url(#pinkGrad)" stroke-width="20" stroke-linecap="round" stroke-dasharray="470 816.8" transform="rotate(-90 250 200)" filter="url(#glow)" />
+
+  <g filter="url(#shadow)">
+    <line x1="250" y1="200" x2="250" y2="80" stroke="url(#silverGrad)" stroke-width="14" stroke-linecap="round" />
+    <line x1="250" y1="200" x2="330" y2="135" stroke="#cbd5e1" stroke-width="14" stroke-linecap="round" />
+  </g>
+  
+  <circle cx="250" cy="200" r="16" fill="url(#blueGrad)" filter="url(#shadow)" />
+
+  <g filter="url(#text-shadow)">
+    <text x="110" y="400" font-family="Arial, sans-serif" font-size="70" fill="url(#silverGrad)" font-weight="bold" text-anchor="middle">Z</text>
+    <text x="180" y="400" font-family="Arial, sans-serif" font-size="70" fill="url(#silverGrad)" font-weight="bold" text-anchor="middle">E</text>
+    
+    <polygon points="264,335 235,375 256,375 236,415 265,375 244,375" fill="url(#blueGrad)" filter="url(#glow)"/>
+    
+    <text x="320" y="400" font-family="Arial, sans-serif" font-size="70" fill="url(#silverGrad)" font-weight="bold" text-anchor="middle">T</text>
+    <text x="390" y="400" font-family="Arial, sans-serif" font-size="70" fill="url(#silverGrad)" font-weight="bold" text-anchor="middle">Z</text>
+  </g>
 </svg>
