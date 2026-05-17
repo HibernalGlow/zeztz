@@ -15,11 +15,6 @@
       <stop offset="100%" stop-color="#2563eb" />
     </linearGradient>
 
-    <linearGradient id="silverGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#ffffff" />
-      <stop offset="100%" stop-color="#94a3b8" />
-    </linearGradient>
-
     <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
       <feGaussianBlur stdDeviation="8" result="blur" />
       <feMerge>
@@ -44,19 +39,19 @@
   <circle cx="250" cy="200" r="130" fill="none" stroke="url(#pinkGrad)" stroke-width="20" stroke-linecap="round" stroke-dasharray="470 816.8" transform="rotate(-90 250 200)" filter="url(#glow)" />
 
   <g filter="url(#shadow)">
-    <line x1="250" y1="200" x2="250" y2="80" stroke="url(#silverGrad)" stroke-width="14" stroke-linecap="round" />
+    <line x1="250" y1="200" x2="250" y2="80" stroke="#f8fafc" stroke-width="14" stroke-linecap="round" />
     <line x1="250" y1="200" x2="330" y2="135" stroke="#cbd5e1" stroke-width="14" stroke-linecap="round" />
   </g>
   
   <circle cx="250" cy="200" r="16" fill="url(#blueGrad)" filter="url(#shadow)" />
 
   <g filter="url(#text-shadow)">
-    <text x="110" y="400" font-family="Arial, sans-serif" font-size="70" fill="url(#silverGrad)" font-weight="bold" text-anchor="middle">Z</text>
-    <text x="180" y="400" font-family="Arial, sans-serif" font-size="70" fill="url(#silverGrad)" font-weight="bold" text-anchor="middle">E</text>
+    <text x="110" y="400" font-family="Arial, sans-serif" font-size="70" fill="#f8fafc" font-weight="bold" text-anchor="middle">Z</text>
+    <text x="180" y="400" font-family="Arial, sans-serif" font-size="70" fill="#f8fafc" font-weight="bold" text-anchor="middle">E</text>
     
     <polygon points="264,335 235,375 256,375 236,415 265,375 244,375" fill="url(#blueGrad)" filter="url(#glow)"/>
     
-    <text x="320" y="400" font-family="Arial, sans-serif" font-size="70" fill="url(#silverGrad)" font-weight="bold" text-anchor="middle">T</text>
-    <text x="390" y="400" font-family="Arial, sans-serif" font-size="70" fill="url(#silverGrad)" font-weight="bold" text-anchor="middle">Z</text>
+    <text x="320" y="400" font-family="Arial, sans-serif" font-size="70" fill="#f8fafc" font-weight="bold" text-anchor="middle">T</text>
+    <text x="390" y="400" font-family="Arial, sans-serif" font-size="70" fill="#f8fafc" font-weight="bold" text-anchor="middle">Z</text>
   </g>
 </svg>

@@ -10,6 +10,7 @@
     CircleCheck, CircleX, Copy, Check, Activity, Wifi, Cpu,
     Calendar, Timer, Gauge, Terminal, Zap, Sun
   } from "@lucide/svelte";
+  import { ExecutePowerAction } from "../bindings/zeztz/timerservice.js";
 
   type TimerMode = 'countdown' | 'specific_time' | 'netspeed' | 'cpu';
   type PowerMode = 'standby' | 'sleep' | 'shutdown' | 'restart';
@@ -307,13 +308,19 @@
     }, 1000);
   }
 
-  function executePowerAction() {
+  async function executePowerAction() {
     const actionText: Record<string, string> = { standby: '睡眠', sleep: '休眠', shutdown: '关机', restart: '重启' };
     phase = 'completed';
     if (dryrun) {
       log(`🔔 [dryrun] 模拟执行: ${actionText[powerMode]}`);
     } else {
       log(`⚡ 执行电源操作: ${actionText[powerMode]}`);
+      try {
+        const result = await ExecutePowerAction(powerMode, false);
+        log(`📋 后端返回: ${result}`);
+      } catch (error) {
+        log(`❌ 执行失败: ${error}`);
+      }
     }
     setTimeout(() => {
       phase = 'idle';

@@ -5,3 +5,7 @@ import * as TimerService from "./timerservice.js";
 export {
     TimerService
 };
+
+export {
+    PowerTestResult
+} from "./models.js";

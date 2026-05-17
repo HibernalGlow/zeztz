@@ -5,6 +5,23 @@
 // @ts-ignore: Unused imports
 import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Create } from "@wailsio/runtime";
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore: Unused imports
+import * as $models from "./models.js";
+
+export function ExecutePowerAction(action: string, dryRun: boolean): $CancellablePromise<string> {
+    return $Call.ByID(282871666, action, dryRun);
+}
+
 export function Greet(name: string): $CancellablePromise<string> {
     return $Call.ByID(2282639641, name);
 }
+
+export function TestPowerAction(action: string): $CancellablePromise<$models.PowerTestResult> {
+    return $Call.ByID(2797839631, action).then(($result: any) => {
+        return $$createType0($result);
+    });
+}
+
+// Private type creation functions
+const $$createType0 = $models.PowerTestResult.createFrom;
