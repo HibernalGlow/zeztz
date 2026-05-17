@@ -4,6 +4,7 @@
   import { Progress } from "$lib/components/ui/progress/index.ts";
   import { Input } from "$lib/components/ui/input/index.ts";
   import { Label } from "$lib/components/ui/label/index.ts";
+  import DateTimePicker from "$lib/components/DateTimePicker.svelte";
   import {
     Play, Square, RotateCcw, Clock, Moon, Power, RotateCcw as RestartIcon,
     CircleCheck, CircleX, Copy, Check, Activity, Wifi, Cpu,
@@ -19,10 +20,10 @@
   let hours = $state(0);
   let minutes = $state(0);
   let seconds = $state(5);
-  let targetDatetime = $state(() => {
+  let targetDatetime = $state((() => {
     const d = new Date(Date.now() + 3600000);
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:00`;
-  });
+  })());
   let uploadThreshold = $state(242);
   let downloadThreshold = $state(242);
   let netDuration = $state(2);
@@ -455,8 +456,8 @@
             <Button variant="outline" size="sm" class="text-xs h-7" onclick={() => setPreset(1,0,0)} disabled={isRunning}>1时</Button>
           </div>
         {:else if timerMode === 'specific_time'}
-          <Input type="text" bind:value={targetDatetime} placeholder="YYYY-MM-DD HH:MM:SS" disabled={isRunning} class="h-8 text-sm font-mono" />
-          <span class="text-xs text-muted-foreground">格式: 2024-12-21 23:30:00</span>
+          <DateTimePicker bind:value={targetDatetime} id="target-datetime" />
+          <span class="text-xs text-muted-foreground">选择目标日期时间</span>
         {:else if timerMode === 'netspeed'}
           <div class="flex gap-2 items-center">
             <div class="flex-1">

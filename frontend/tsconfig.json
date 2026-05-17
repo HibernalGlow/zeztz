@@ -1,0 +1,14 @@
+{
+	"extends": "./svelte.config.json",
+	"compilerOptions": {
+		"baseUrl": ".",
+		"paths": {
+			"$lib": ["./src/lib"],
+			"$lib/*": ["./src/lib/*"]
+		},
+		"checkJs": true,
+		"noEmit": true,
+		"skipLibCheck": true
+	},
+	"include": ["src/**/*.ts", "src/**/*.svelte", "src/**/*.js"]
+}
