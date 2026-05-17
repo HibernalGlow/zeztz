@@ -8,11 +8,11 @@
   import {
     Play, Square, RotateCcw, Clock, Moon, Power, RotateCcw as RestartIcon,
     CircleCheck, CircleX, Copy, Check, Activity, Wifi, Cpu,
-    Calendar, Timer, Gauge, Terminal
+    Calendar, Timer, Gauge, Terminal, Zap
   } from "@lucide/svelte";
 
   type TimerMode = 'countdown' | 'specific_time' | 'netspeed' | 'cpu';
-  type PowerMode = 'sleep' | 'shutdown' | 'restart';
+  type PowerMode = 'standby' | 'sleep' | 'shutdown' | 'restart';
   type Phase = 'idle' | 'running' | 'completed' | 'cancelled' | 'error';
 
   let timerMode: TimerMode = $state('countdown');
@@ -43,6 +43,13 @@
   let cpuHistory: number[] = $state([]);
   let logs: string[] = $state([]);
   let copied = $state(false);
+  let logsEl: HTMLDivElement | undefined = $state();
+
+  $effect(() => {
+    if (logsEl && logs.length > 0) {
+      logsEl.scrollTop = logsEl.scrollHeight;
+    }
+  });
 
   let intervalId: ReturnType<typeof setInterval> | null = null;
   let totalSeconds = $state(0);
@@ -300,7 +307,7 @@
   }
 
   function executePowerAction() {
-    const actionText: Record<string, string> = { sleep: '休眠', shutdown: '关机', restart: '重启' };
+    const actionText: Record<string, string> = { standby: '睡眠', sleep: '休眠', shutdown: '关机', restart: '重启' };
     phase = 'completed';
     if (dryrun) {
       log(`🔔 [dryrun] 模拟执行: ${actionText[powerMode]}`);
@@ -371,7 +378,6 @@
     <div class="flex items-center gap-2">
       <Clock class="size-5" />
       <h1 class="text-sm font-semibold tracking-tight">zeztz</h1>
-      <span class="text-xs text-muted-foreground">系统定时器</span>
     </div>
     <div class="flex items-center gap-2">
       <span class="text-xs text-muted-foreground" class:opacity-50={!isRunning}>
@@ -407,6 +413,9 @@
       <div>
         <Label class="mb-1.5">电源操作</Label>
         <div class="flex gap-1.5">
+          <Button variant={powerMode === 'standby' ? 'default' : 'outline'} size="sm" class="flex-1" onclick={() => powerMode = 'standby'} disabled={isRunning}>
+            <Zap class="size-3.5" />睡眠
+          </Button>
           <Button variant={powerMode === 'sleep' ? 'default' : 'outline'} size="sm" class="flex-1" onclick={() => powerMode = 'sleep'} disabled={isRunning}>
             <Moon class="size-3.5" />休眠
           </Button>
@@ -576,7 +585,7 @@
     </div>
 
     <!-- Row 3: Controls + Logs -->
-    <div class="flex gap-3 shrink-0">
+    <div class="flex gap-3 h-[120px] shrink-0">
       <!-- Controls -->
       <section class="w-40 flex flex-col gap-2 shrink-0">
         {#if canStart}
@@ -604,9 +613,9 @@
             {#if copied}<Check class="size-3 text-green-500" />{:else}<Copy class="size-3" />{/if}
           </Button>
         </div>
-        <div class="flex-1 overflow-y-auto p-2 font-mono text-xs space-y-0.5">
+        <div class="flex-1 overflow-y-auto p-2 font-mono text-xs space-y-0.5" bind:this={logsEl}>
           {#if logs.length > 0}
-            {#each logs.slice(-20) as logItem}
+            {#each logs as logItem}
               <div class="text-muted-foreground break-all">{logItem}</div>
             {/each}
           {:else}

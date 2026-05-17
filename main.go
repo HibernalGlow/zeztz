@@ -26,7 +26,7 @@ func main() {
 	})
 
 	app.Window.NewWithOptions(application.WebviewWindowOptions{
-		Title:            "zeztz - 系统定时器",
+		Title:            "zeztz",
 		Width:            540,
 		Height:           680,
 		BackgroundColour: application.NewRGB(15, 23, 42),
