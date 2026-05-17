@@ -383,6 +383,10 @@
       <h1 class="text-sm font-semibold tracking-tight">zeztz</h1>
     </div>
     <div class="flex items-center gap-3">
+      <label class="flex items-center gap-1.5 cursor-pointer">
+        <Checkbox bind:checked={dryrun} disabled={isRunning} class="size-3.5" />
+        <span class="text-xs text-muted-foreground">演练</span>
+      </label>
       <div class="flex items-center gap-1.5">
         <div
           class="size-2 rounded-full transition-colors duration-300"
@@ -429,31 +433,27 @@
       </div>
       <div>
         <Label class="mb-1.5">电源操作</Label>
-        <div class="flex gap-1.5">
-          <Button variant={powerMode === 'standby' ? 'default' : 'outline'} size="sm" class="flex-1" onclick={() => powerMode = 'standby'} disabled={isRunning}>
+        <div class="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+          <Button variant={powerMode === 'standby' ? 'default' : 'outline'} size="sm" class="w-full" onclick={() => powerMode = 'standby'} disabled={isRunning}>
             <Zap class="size-3.5" />睡眠
           </Button>
-          <Button variant={powerMode === 'sleep' ? 'default' : 'outline'} size="sm" class="flex-1" onclick={() => powerMode = 'sleep'} disabled={isRunning}>
+          <Button variant={powerMode === 'sleep' ? 'default' : 'outline'} size="sm" class="w-full" onclick={() => powerMode = 'sleep'} disabled={isRunning}>
             <Moon class="size-3.5" />休眠
           </Button>
-          <Button variant={powerMode === 'shutdown' ? 'default' : 'outline'} size="sm" class="flex-1" onclick={() => powerMode = 'shutdown'} disabled={isRunning}>
+          <Button variant={powerMode === 'shutdown' ? 'default' : 'outline'} size="sm" class="w-full" onclick={() => powerMode = 'shutdown'} disabled={isRunning}>
             <Power class="size-3.5" />关机
           </Button>
-          <Button variant={powerMode === 'restart' ? 'default' : 'outline'} size="sm" class="flex-1" onclick={() => powerMode = 'restart'} disabled={isRunning}>
+          <Button variant={powerMode === 'restart' ? 'default' : 'outline'} size="sm" class="w-full" onclick={() => powerMode = 'restart'} disabled={isRunning}>
             <RestartIcon class="size-3.5" />重启
           </Button>
         </div>
-        <label class="flex items-center gap-2 mt-2 cursor-pointer">
-          <Checkbox bind:checked={dryrun} disabled={isRunning} />
-          <span class="text-xs text-muted-foreground">演练模式</span>
-        </label>
       </div>
     </section>
 
     <!-- Row 2: Timer Config / Status -->
-    <div class="flex gap-3 flex-1 min-h-0">
+    <div class="flex gap-3 flex-1 min-h-0 flex-col sm:flex-row">
       <!-- Timer Config -->
-      <section class="w-56 shrink-0 flex flex-col gap-2 p-3 rounded-lg border bg-card">
+      <section class="w-full sm:w-56 shrink-0 flex flex-col gap-2 p-3 rounded-lg border bg-card">
         <Label class="font-medium border-b pb-1 mb-1">
           {timerMode === 'countdown' ? '倒计时设置' :
            timerMode === 'specific_time' ? '目标时间' :
@@ -602,9 +602,9 @@
     </div>
 
     <!-- Row 3: Controls + Logs -->
-    <div class="flex gap-3 h-[120px] shrink-0">
+    <div class="flex gap-3 h-[120px] sm:h-auto shrink-0 flex-col sm:flex-row">
       <!-- Controls -->
-      <section class="w-40 flex flex-col gap-2 shrink-0">
+      <section class="w-full sm:w-40 flex flex-col gap-2 shrink-0 sm:shrink">
         {#if canStart}
           <Button class="w-full" onclick={handleStart}>
             <Play class="size-4" />开始
@@ -623,7 +623,7 @@
       </section>
 
       <!-- Logs -->
-      <section class="flex-1 border rounded-lg bg-card flex flex-col min-h-0">
+      <section class="flex-1 border rounded-lg bg-card flex flex-col min-h-0 sm:min-h-[100px]">
         <div class="flex items-center justify-between px-3 py-1.5 border-b shrink-0">
           <span class="text-xs font-semibold flex items-center gap-1.5"><Terminal class="size-3.5" />日志</span>
           <Button variant="ghost" size="icon" class="size-6" onclick={copyLogs}>
