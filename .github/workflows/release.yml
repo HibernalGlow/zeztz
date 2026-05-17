@@ -1,0 +1,91 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 11
+
+      - name: Install Wails3
+        run: go install github.com/wailsapp/wails/v3/cmd/wails3@latest
+
+      - name: Install NSIS
+        run: |
+          choco install nsis -y
+          echo "C:\Program Files\NSIS" >> $env:GITHUB_PATH
+
+      - name: Build application
+        run: wails3 build
+
+      - name: Package application
+        run: wails3 package
+
+      - name: Get version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.get_version.outputs.VERSION }}
+          name: Release ${{ steps.get_version.outputs.VERSION }}
+          draft: false
+          prerelease: false
+          files: |
+            bin/zeztz.exe
+            bin/zeztz-amd64-installer.exe
+          body: |
+            ## zeztz ${{ steps.get_version.outputs.VERSION }}
+            
+            ### 下载
+            
+            - **zeztz-amd64-installer.exe** - Windows 安装程序（推荐）
+            - **zeztz.exe** - Windows 便携版
+            
+            ### 功能
+            
+            - ⏰ 倒计时模式：设置倒计时时间后执行电源操作
+            - 📅 指定时间模式：在指定时间执行电源操作
+            - 📡 网速监控：监控网络速度，低于阈值时执行操作
+            - 💻 CPU监控：监控CPU使用率，低于阈值时执行操作
+            
+            ### 电源操作
+            
+            - 😴 睡眠（Suspend）
+            - 💤 休眠（Hibernate）
+            - ⏻ 关机（Shutdown）
+            - 🔄 重启（Restart）
+            
+            ### 新功能
+            
+            - 使用 Wails3 框架重构
+            - 现代化 UI 设计（shadcn-svelte）
+            - 深色/浅色主题切换
+            - 演练模式（不实际执行电源操作）
+            - 日志记录和复制功能
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
