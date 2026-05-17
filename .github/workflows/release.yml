@@ -4,103 +4,259 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 手动验证时要构建的 Git 引用，选填；可填写分支、Tag 或提交 SHA，默认 main
+        required: false
+        default: main
+        type: string
+      tag_name:
+        description: 手动触发时用于产物文件名和发布标识的标签名，选填；不填则自动生成 manual-运行号-短SHA
+        required: false
+        default: ""
+        type: string
+      version:
+        description: 手动触发时写入桌面端构建元数据的版本号，选填；如不填则优先从 tag_name 推断，否则自动生成 0.0.运行号
+        required: false
+        default: ""
+        type: string
+      publish_release:
+        description: 手动触发后是否自动创建 GitHub Release，非必填；默认 false，仅做构建验证与产物上传
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: write
 
+env:
+  GO_VERSION: "1.22"
+  NODE_VERSION: "22"
+  WAILS_VERSION: "v3.0.0-alpha.74"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
-  build-windows:
-    runs-on: windows-latest
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      tag_name: ${{ steps.meta.outputs.tag_name }}
+      version: ${{ steps.meta.outputs.version }}
+      build_date: ${{ steps.meta.outputs.build_date }}
+      release_name: ${{ steps.meta.outputs.release_name }}
+      should_publish: ${{ steps.meta.outputs.should_publish }}
+    steps:
+      - name: Resolve release metadata
+        id: meta
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
+            TAG_INPUT="${{ inputs.tag_name }}"
+            VERSION_INPUT="${{ inputs.version }}"
+
+            if [[ -n "${TAG_INPUT}" ]]; then
+              TAG_NAME="${TAG_INPUT}"
+            else
+              TAG_NAME="manual-${GITHUB_RUN_NUMBER}-${GITHUB_SHA::7}"
+            fi
+
+            if [[ -n "${VERSION_INPUT}" ]]; then
+              VERSION="${VERSION_INPUT}"
+            elif [[ "${TAG_NAME}" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+([.-].*)?$ ]]; then
+              VERSION="${TAG_NAME#v}"
+            else
+              VERSION="0.0.${GITHUB_RUN_NUMBER}"
+            fi
+
+            RELEASE_NAME="Manual Validation ${TAG_NAME}"
+            SHOULD_PUBLISH="${{ inputs.publish_release }}"
+          else
+            TAG_NAME="${GITHUB_REF#refs/tags/}"
+            VERSION="${TAG_NAME#v}"
+            RELEASE_NAME="${TAG_NAME}"
+            SHOULD_PUBLISH="true"
+          fi
+
+          echo "tag_name=${TAG_NAME}" >> "${GITHUB_OUTPUT}"
+          echo "version=${VERSION}" >> "${GITHUB_OUTPUT}"
+          echo "build_date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "${GITHUB_OUTPUT}"
+          echo "release_name=${RELEASE_NAME}" >> "${GITHUB_OUTPUT}"
+          echo "should_publish=${SHOULD_PUBLISH}" >> "${GITHUB_OUTPUT}"
+
+  desktop-build:
+    name: Desktop ${{ matrix.label }}
+    needs: prepare
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            label: windows-amd64
+            platform: windows
+            arch: amd64
+            package_suffix: windows-amd64-installer.exe
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Go
-        uses: actions/setup-go@v5
+        uses: actions/checkout@v5
         with:
-          go-version: '1.22'
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.ref || github.ref }}
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v3
+      - uses: pnpm/action-setup@v4
         with:
           version: 11
 
-      - name: Verify pnpm installation
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+          check-latest: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Install Wails v3
+        shell: bash
         run: |
-          pnpm --version
-          echo "PATH: $env:PATH"
+          set -euo pipefail
+          go install github.com/wailsapp/wails/v3/cmd/wails3@${{ env.WAILS_VERSION }}
+          echo "$(go env GOPATH)/bin" >> "${GITHUB_PATH}"
 
-      - name: Install Wails3
-        run: go install github.com/wailsapp/wails/v3/cmd/wails3@latest
-
-      - name: Install NSIS
+      - name: Prepare Go build version metadata
+        shell: bash
         run: |
-          iwr -useb get.scoop.sh | iex
-          scoop install nsis
-          echo "$env:USERPROFILE\scoop\shims" >> $env:GITHUB_PATH
+          set -euo pipefail
+          echo "ZEZTZ_VERSION=${{ needs.prepare.outputs.tag_name }}" >> "${GITHUB_ENV}"
+          echo "ZEZTZ_BUILD_DATE=${{ needs.prepare.outputs.build_date }}" >> "${GITHUB_ENV}"
+          echo "ZEZTZ_COMMIT_ID=${GITHUB_SHA}" >> "${GITHUB_ENV}"
 
-      - name: Verify NSIS installation
+      - name: Install Windows packaging tools
+        if: ${{ matrix.platform == 'windows' }}
+        shell: pwsh
         run: |
-          makensis --version
-          where.exe makensis
+          choco install nsis -y --no-progress
+          "C:\Program Files (x86)\NSIS" | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
 
-      - name: Build application
-        run: wails3 build
-        env:
-          PACKAGE_MANAGER: pnpm
+      - name: Build Windows installer
+        if: ${{ matrix.platform == 'windows' }}
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path release-assets | Out-Null
+          wails3 build
+          wails3 package
+          $source = "bin/zeztz-amd64-installer.exe"
+          if (!(Test-Path $source)) {
+            Write-Error "missing installer: $source"
+            exit 1
+          }
+          Copy-Item -LiteralPath $source -Destination "release-assets/zeztz-${{ needs.prepare.outputs.tag_name }}-${{ matrix.package_suffix }}" -Force
+          Copy-Item -LiteralPath "bin/zeztz.exe" -Destination "release-assets/zeztz-${{ needs.prepare.outputs.tag_name }}-windows-amd64.exe" -Force
 
-      - name: Package application
-        run: wails3 package
-        env:
-          PACKAGE_MANAGER: pnpm
+      - name: Upload desktop artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-assets-${{ matrix.label }}
+          path: release-assets/*
+          retention-days: 1
 
-      - name: Get version from tag
-        id: get_version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+  publish-release:
+    if: ${{ needs.prepare.outputs.should_publish == 'true' }}
+    runs-on: ubuntu-latest
+    needs:
+      - prepare
+      - desktop-build
+    permissions:
+      contents: write
+      pull-requests: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.ref || github.ref }}
 
-      - name: Create Release
+      - name: Download desktop artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: release-assets-*
+          merge-multiple: true
+          path: release-assets
+
+      - name: Generate SHA256SUMS
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd release-assets
+          find . -maxdepth 1 -type f -printf '%P\n' | LC_ALL=C sort | xargs sha256sum > SHA256SUMS
+
+      - name: Build release notes header
+        id: release_header
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG_NAME="${{ needs.prepare.outputs.tag_name }}"
+          REPOSITORY="${{ github.repository }}"
+          RELEASE_BASE_URL="https://github.com/${REPOSITORY}/releases/download/${TAG_NAME}"
+
+          emit_row() {
+            local platform="$1"
+            local architecture="$2"
+            local package_type="$3"
+            local filename="$4"
+
+            if [[ -f "release-assets/${filename}" ]]; then
+              printf '| %s | %s | %s | [`%s`](%s/%s) |\n' \
+                "${platform}" "${architecture}" "${package_type}" "${filename}" "${RELEASE_BASE_URL}" "${filename}"
+            fi
+          }
+
+          {
+            echo 'header<<EOF'
+            echo '## Downloads'
+            echo
+            echo '| Platform | Architecture | Package | Download |'
+            echo '| --- | --- | --- | --- |'
+            emit_row "Windows" "x64" "Installer" "zeztz-${TAG_NAME}-windows-amd64-installer.exe"
+            emit_row "Windows" "x64" "Portable" "zeztz-${TAG_NAME}-windows-amd64.exe"
+            echo
+            if [[ -f release-assets/SHA256SUMS ]]; then
+              echo '## Checksums'
+              echo
+              echo "- [SHA256SUMS](${RELEASE_BASE_URL}/SHA256SUMS)"
+              echo
+            fi
+            echo '## Features'
+            echo
+            echo '- ⏰ 倒计时模式：设置倒计时时间后执行电源操作'
+            echo '- 📅 指定时间模式：在指定时间执行电源操作'
+            echo '- 📡 网速监控：监控网络速度，低于阈值时执行操作'
+            echo '- 💻 CPU监控：监控CPU使用率，低于阈值时执行操作'
+            echo
+            echo '## Power Operations'
+            echo
+            echo '- 😴 睡眠（Suspend）'
+            echo '- 💤 休眠（Hibernate）'
+            echo '- ⏻ 关机（Shutdown）'
+            echo '- 🔄 重启（Restart）'
+            echo
+            echo 'EOF'
+          } >> "${GITHUB_OUTPUT}"
+
+      - name: Create release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.get_version.outputs.VERSION }}
-          name: Release ${{ steps.get_version.outputs.VERSION }}
+          tag_name: ${{ needs.prepare.outputs.tag_name }}
+          name: ${{ needs.prepare.outputs.release_name }}
           draft: false
           prerelease: false
-          files: |
-            bin/zeztz.exe
-            bin/zeztz-amd64-installer.exe
-          body: |
-            ## zeztz ${{ steps.get_version.outputs.VERSION }}
-            
-            ### 下载
-            
-            - **zeztz-amd64-installer.exe** - Windows 安装程序（推荐）
-            - **zeztz.exe** - Windows 便携版
-            
-            ### 功能
-            
-            - ⏰ 倒计时模式：设置倒计时时间后执行电源操作
-            - 📅 指定时间模式：在指定时间执行电源操作
-            - 📡 网速监控：监控网络速度，低于阈值时执行操作
-            - 💻 CPU监控：监控CPU使用率，低于阈值时执行操作
-            
-            ### 电源操作
-            
-            - 😴 睡眠（Suspend）
-            - 💤 休眠（Hibernate）
-            - ⏻ 关机（Shutdown）
-            - 🔄 重启（Restart）
-            
-            ### 新功能
-            
-            - 使用 Wails3 框架重构
-            - 现代化 UI 设计（shadcn-svelte）
-            - 深色/浅色主题切换
-            - 演练模式（不实际执行电源操作）
-            - 日志记录和复制功能
+          make_latest: true
+          body: ${{ steps.release_header.outputs.header }}
+          files: release-assets/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
